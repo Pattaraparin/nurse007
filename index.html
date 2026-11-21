@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ระบบประเมินความพึงพอใจและความวิตกกังวลก่อนผ่าตัด</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--ink:#16313a;--sub:#5b727a;--paper:#f4f8f8;--card:#fff;--line:#d5e2e4;--teal:#0d6b73;--tealbg:#e1f1f2;--coral:#b4472f;--coralbg:#fbe9e4;--r:10px}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans Thai',system-ui,sans-serif;color:var(--ink);background:var(--paper);line-height:1.6;font-size:16px}
+header{background:var(--ink);color:#fff;padding:14px 20px}
+header h1{margin:0;font-size:1.15rem;font-weight:700}
+header p{margin:2px 0 0;font-size:.82rem;color:#b9ced3}
+nav{display:flex;gap:4px;background:#fff;border-bottom:1px solid var(--line);padding:0 12px;position:sticky;top:0;z-index:5;overflow-x:auto}
+nav button{border:0;background:none;padding:12px 16px;font:inherit;font-weight:500;color:var(--sub);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+nav button.on{color:var(--teal);border-color:var(--teal)}
+main{max-width:1080px;margin:0 auto;padding:18px 14px 80px}
+.view{display:none}.view.on{display:block}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-bottom:16px}
+h2{font-size:1.05rem;margin:0 0 12px}
+.note{font-size:.85rem;color:var(--sub);background:var(--tealbg);border-radius:8px;padding:8px 12px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+label.f{display:flex;flex-direction:column;font-size:.88rem;font-weight:500;gap:4px}
+input,select,textarea{font:inherit;padding:9px 10px;border:1px solid #b8cbce;border-radius:8px;background:#fff;color:var(--ink);width:100%}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid #8fcfd4;outline-offset:1px}
+textarea{min-height:70px;resize:vertical}
+.wide{grid-column:1/-1}
+.q{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}
+.q span{flex:1 1 280px}
+.opts{display:flex;gap:6px}
+.opts label{cursor:pointer}
+.opts input{position:absolute;opacity:0;width:0;height:0}
+.opts b{display:grid;place-items:center;width:42px;height:42px;border:1px solid #b8cbce;border-radius:50%;font-weight:500;background:#fff}
+.opts input:checked+b{background:var(--teal);color:#fff;border-color:var(--teal)}
+.anx .opts input:checked+b{background:var(--coral);border-color:var(--coral)}
+.opts input:focus-visible+b{outline:3px solid #8fcfd4}
+.legend{font-size:.82rem;color:var(--sub);margin-bottom:6px}
+.live{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;font-weight:500}
+.pill{padding:4px 12px;border-radius:99px;background:var(--tealbg);color:var(--teal)}
+.anx .pill{background:var(--coralbg);color:var(--coral)}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:500;border:1px solid var(--teal);background:#fff;color:var(--teal);padding:9px 18px;border-radius:8px;cursor:pointer}
+.btn.p{background:var(--teal);color:#fff}.btn.d{border-color:var(--coral);color:var(--coral)}
+.btn.sm{padding:4px 10px;font-size:.85rem}.btn:disabled{opacity:.5;cursor:wait}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{background:var(--tealbg);font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.kpi small{color:var(--sub)}.kpi div{font-size:1.9rem;font-weight:700}
+.kpi.s div{color:var(--teal)}.kpi.a div{color:var(--coral)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.cbox{position:relative;height:280px}
+.bar{background:#e8eff0;border-radius:4px;height:12px;min-width:90px}.bar i{display:block;height:100%;border-radius:4px;background:var(--teal)}
+.anx-bar i{background:var(--coral)}
+.modal{position:fixed;inset:0;background:rgba(10,30,35,.55);display:none;z-index:20;overflow:auto;padding:16px}
+.modal.on{display:block}
+.mbox{background:#fff;max-width:760px;margin:0 auto;border-radius:var(--r);padding:20px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);padding:11px 20px;border-radius:8px;color:#fff;display:none;z-index:30;max-width:92vw}
+#toast.ok{background:#16794a}#toast.err{background:#a52a2a}
+.empty{text-align:center;color:var(--sub);padding:24px}
+@media print{header,nav,.btns,.noprint,#toast{display:none!important}body{background:#fff}
+ body[data-print=modal] main{display:none}body[data-print=view] .modal{display:none}
+ .modal{position:static;background:none;padding:0}.mbox{max-width:none;padding:0}
+ section.card,.kpi{break-inside:avoid}.view{display:none}.view.on{display:block}}
+</style>
+</head>
+<body>
+<header><h1 id="title">ระบบสำรวจความพึงพอใจและประเมินความวิตกกังวลก่อนผ่าตัด</h1>
+<p>ข้อมูลนี้เป็นความลับทางการแพทย์ ใช้เฉพาะผู้ที่ได้รับอนุญาตเท่านั้น</p></header>
+<nav>
+<button class="on" data-v="form">แบบประเมิน</button>
+<button data-v="list">ข้อมูลย้อนหลัง</button>
+<button data-v="dash">Dashboard</button>
+</nav>
+<main>
+<!-- ฟอร์ม -->
+<div class="view on" id="v-form">
+<p class="note" id="editNote" style="display:none"></p>
+<section class="card"><h2>1. ข้อมูลทั่วไปของผู้ป่วย</h2>
+<div class="grid">
+<label class="f">เลขที่ผู้ป่วย (HN) *<input id="hn" maxlength="30" autocomplete="off"></label>
+<label class="f">วันที่ประเมิน *<input type="date" id="assessDate"></label>
+<label class="f">ชื่อ-นามสกุล หรือรหัสแทนชื่อ (ไม่บังคับ)<input id="name" maxlength="100" autocomplete="off"></label>
+<label class="f">อายุ (ปี)<input type="number" id="age" min="0" max="120"></label>
+<label class="f">เพศ<select id="sex"></select></label>
+<label class="f">หอผู้ป่วย<input id="ward" list="wardList" maxlength="100"><datalist id="wardList"></datalist></label>
+<label class="f">ชนิดของการผ่าตัด<input id="surgeryType" list="surgList" maxlength="150"><datalist id="surgList"></datalist></label>
+<label class="f">วันที่กำหนดผ่าตัด<input type="date" id="surgeryDate"></label>
+<label class="f">ประสบการณ์การผ่าตัดในอดีต<select id="priorSurgery"></select></label>
+<label class="f wide">โรคประจำตัว<input id="disease" maxlength="300" placeholder="เช่น เบาหวาน ความดันโลหิตสูง หรือ ไม่มี"></label>
+</div></section>
+
+<section class="card"><h2>2. แบบประเมินความพึงพอใจของผู้ป่วย</h2>
+<p class="legend">5 = พึงพอใจมากที่สุด · 4 = พึงพอใจมาก · 3 = ปานกลาง · 2 = พึงพอใจน้อย · 1 = พึงพอใจน้อยที่สุด</p>
+<div id="sat"></div>
+<div class="live"><span class="pill" id="sLive">ตอบแล้ว 0/10 ข้อ</span></div></section>
+
+<section class="card anx"><h2>3. แบบประเมินความวิตกกังวลก่อนผ่าตัด</h2>
+<p class="note">แบบประเมินนี้จัดทำขึ้นเพื่อสำรวจเบื้องต้น ไม่ใช่แบบประเมินมาตรฐานที่ผ่านการตรวจสอบความตรงและความเที่ยง หากนำไปใช้ในงานวิจัย ต้องตรวจสอบและเลือกเครื่องมือที่ผ่านการรับรองให้เหมาะสมก่อน</p>
+<p class="legend">5 = วิตกกังวลมากที่สุด · 4 = วิตกกังวลมาก · 3 = ปานกลาง · 2 = วิตกกังวลเล็กน้อย · 1 = ไม่วิตกกังวล</p>
+<div id="anx"></div>
+<div class="live"><span class="pill" id="aLive">ตอบแล้ว 0/10 ข้อ</span></div></section>
+
+<section class="card"><h2>4. ข้อเสนอแนะเพิ่มเติมจากผู้ป่วย</h2>
+<div class="grid">
+<label class="f wide">ความคิดเห็นเกี่ยวกับการให้บริการ<textarea id="comment" maxlength="1000"></textarea></label>
+<label class="f wide">สิ่งที่ต้องการให้ปรับปรุง<textarea id="improve" maxlength="1000"></textarea></label>
+<label class="f wide">ข้อเสนอแนะเกี่ยวกับการเตรียมตัวก่อนผ่าตัด<textarea id="prepSuggest" maxlength="1000"></textarea></label>
+<label class="f wide">สิ่งที่ยังกังวลหรืออยากสอบถามเพิ่มเติม<textarea id="concern" maxlength="1000"></textarea></label>
+</div></section>
+
+<div class="btns">
+<button class="btn p" id="saveBtn">บันทึกข้อมูล</button>
+<button class="btn p" id="updBtn" style="display:none">บันทึกการแก้ไข</button>
+<button class="btn d" id="delBtn" style="display:none">ลบข้อมูลนี้</button>
+<button class="btn" id="clearBtn">ล้างแบบฟอร์ม</button>
+</div>
+</div>
+
+<!-- รายการ -->
+<div class="view" id="v-list">
+<section class="card"><h2>ค้นหาและจัดการข้อมูล</h2>
+<div class="grid">
+<label class="f">HN<input id="qHn" placeholder="พิมพ์ HN"></label>
+<label class="f">ตั้งแต่วันที่<input type="date" id="qFrom"></label>
+<label class="f">ถึงวันที่<input type="date" id="qTo"></label>
+</div>
+<div class="btns" style="margin-top:12px">
+<button class="btn p" id="qBtn">ค้นหา</button>
+<button class="btn" id="qClear">แสดงทั้งหมด</button>
+<button class="btn" id="csvBtn">ส่งออก Excel/CSV</button>
+<button class="btn" id="printList">พิมพ์รายงานภาพรวม (PDF)</button>
+</div></section>
+<section class="card"><h2>รายงานภาพรวมผู้ป่วย <small id="cnt"></small></h2>
+<div class="tw"><table><thead><tr><th>HN</th><th>วันที่ประเมิน</th><th>อายุ/เพศ</th><th>หอผู้ป่วย</th><th>การผ่าตัด</th><th>พึงพอใจ</th><th>วิตกกังวล</th><th class="noprint"></th></tr></thead>
+<tbody id="rows"></tbody></table></div></section>
+</div>
+
+<!-- Dashboard -->
+<div class="view" id="v-dash">
+<section class="card noprint"><h2>เลือกช่วงวันที่</h2>
+<div class="grid"><label class="f">ตั้งแต่<input type="date" id="dFrom"></label><label class="f">ถึง<input type="date" id="dTo"></label></div>
+<div class="btns" style="margin-top:12px"><button class="btn p" id="dBtn">แสดงผล</button><button class="btn" id="dClear">ทุกช่วงเวลา</button><button class="btn" id="printDash">พิมพ์สรุปผล (PDF)</button></div></section>
+<div class="kpis">
+<div class="kpi"><small>ผู้ป่วยที่ได้รับการประเมิน</small><div id="kN">0</div></div>
+<div class="kpi s"><small>คะแนนเฉลี่ยความพึงพอใจ (เต็ม 5)</small><div id="kS">-</div><small id="kSL"></small></div>
+<div class="kpi a"><small>คะแนนเฉลี่ยความวิตกกังวล (เต็ม 5)</small><div id="kA">-</div><small id="kAL"></small></div>
+</div>
+<div class="charts">
+<section class="card"><h2>เปรียบเทียบคะแนนเฉลี่ย</h2><div class="cbox"><canvas id="c1"></canvas></div></section>
+<section class="card"><h2>แนวโน้มรายเดือน</h2><div class="cbox"><canvas id="c2"></canvas></div></section>
+</div>
+<div class="charts">
+<section class="card"><h2>ร้อยละระดับความพึงพอใจ</h2><table><tbody id="sDist"></tbody></table></section>
+<section class="card"><h2>ร้อยละระดับความวิตกกังวล</h2><table><tbody id="aDist"></tbody></table></section>
+</div>
+</div>
+</main>
+
+<!-- รายงานรายบุคคล -->
+<div class="modal" id="modal"><div class="mbox"><div id="report"></div>
+<div class="btns noprint" style="margin-top:14px"><button class="btn p" id="printOne">พิมพ์ / บันทึกเป็น PDF</button><button class="btn" id="closeM">ปิด</button></div></div></div>
+<div id="toast"></div>
+
+<script>
+const SQ=['การให้ข้อมูลเกี่ยวกับการผ่าตัด','การอธิบายขั้นตอนก่อนและหลังผ่าตัด','การให้ข้อมูลเกี่ยวกับการระงับความรู้สึก','การให้คำแนะนำเกี่ยวกับการปฏิบัติตัวก่อนผ่าตัด','การเปิดโอกาสให้ซักถามข้อสงสัย','ความเอาใจใส่ของพยาบาล','ความรวดเร็วในการให้บริการ','ความสุภาพและการสื่อสารของเจ้าหน้าที่','ความมั่นใจในการดูแลของบุคลากร','ความพึงพอใจโดยรวม'];
+const AQ=['รู้สึกกังวลเกี่ยวกับการผ่าตัด','กลัวผลแทรกซ้อนจากการผ่าตัด','กลัวความเจ็บปวดหลังผ่าตัด','กังวลเกี่ยวกับการดมยาสลบหรือการระงับความรู้สึก','กลัวว่าจะเกิดอันตรายระหว่างผ่าตัด','กังวลเกี่ยวกับผลการผ่าตัด','กังวลเกี่ยวกับการฟื้นตัวหลังผ่าตัด','กังวลเกี่ยวกับค่าใช้จ่ายในการรักษา','นอนไม่หลับเนื่องจากความกังวล','รู้สึกไม่สบายใจเมื่อนึกถึงการผ่าตัด'];
+const SL=['พึงพอใจน้อยที่สุด','พึงพอใจน้อย','ปานกลาง','พึงพอใจมาก','พึงพอใจมากที่สุด'];
+const AL=['ไม่วิตกกังวล','วิตกกังวลเล็กน้อย','ปานกลาง','วิตกกังวลมาก','วิตกกังวลมากที่สุด'];
+const F=['hn','assessDate','name','age','sex','ward','surgeryType','surgeryDate','priorSurgery','disease','comment','improve','prepSuggest','concern'];
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const gs=(fn,...a)=>new Promise((ok,no)=>google.script.run.withSuccessHandler(ok).withFailureHandler(e=>no(e)||0)[fn](...a));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const lv=m=>m>=4.5?4:m>=3.5?3:m>=2.5?2:m>=1.5?1:0;
+let editId=null,token=newToken(),busy=false,DATA=[],charts={};
+
+function newToken(){return (crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random()).toString()}
+function toast(m,t){const e=$('#toast');e.textContent=m;e.className=t;e.style.display='block';clearTimeout(e.h);e.h=setTimeout(()=>e.style.display='none',4500)}
+const msg=e=>(e&&e.message?e.message:String(e)).replace(/^Error:\s*/,'');
+function lock(b){busy=b;$$('.btns .btn').forEach(x=>x.disabled=b)}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+
+function likert(box,pre,qs){
+  $(box).innerHTML=qs.map((q,i)=>`<div class="q"><span>${i+1}. ${q}</span><div class="opts">${[1,2,3,4,5].map(n=>`<label><input type="radio" name="${pre}${i}" value="${n}"><b>${n}</b></label>`).join('')}</div></div>`).join('');
+  $(box).addEventListener('change',liveScore);
+}
+function getScores(pre){return Array.from({length:10},(_,i)=>{const c=document.querySelector(`input[name="${pre}${i}"]:checked`);return c?+c.value:0})}
+function liveScore(){
+  [['s','#sLive',SL],['a','#aLive',AL]].forEach(([p,id,L])=>{
+    const v=getScores(p),n=v.filter(Boolean).length,t=v.reduce((a,b)=>a+b,0);
+    $(id).textContent=n<10?`ตอบแล้ว ${n}/10 ข้อ`:`คะแนนรวม ${t} · เฉลี่ย ${(t/10).toFixed(2)} · ${L[lv(t/10)]}`;
+  });
+}
+function setScores(pre,arr){arr.forEach((v,i)=>{const r=document.querySelector(`input[name="${pre}${i}"][value="${v}"]`);if(r)r.checked=true});liveScore()}
+
+function fill(sel,arr,blank){$(sel).innerHTML=(blank?'<option value="">— เลือก —</option>':'')+arr.map(x=>`<option>${esc(x)}</option>`).join('')}
+async function init(){
+  likert('#sat','s',SQ);likert('#anx','a',AQ);resetForm();
+  try{
+    const o=await gs('getOptions');
+    fill('#sex',o.sex,1);fill('#priorSurgery',o.priorSurgery,1);
+    $('#wardList').innerHTML=o.wards.map(x=>`<option value="${esc(x)}">`).join('');
+    $('#surgList').innerHTML=o.surgeryTypes.map(x=>`<option value="${esc(x)}">`).join('');
+    if(o.systemName)$('#title').textContent=o.systemName;
+  }catch(e){toast('โหลดการตั้งค่าไม่สำเร็จ: '+msg(e),'err')}
+}
+function resetForm(){
+  F.forEach(k=>$('#'+k).value='');$$('input[type=radio]').forEach(r=>r.checked=false);
+  $('#assessDate').value=todayStr();editId=null;token=newToken();
+  $('#saveBtn').style.display='';$('#updBtn').style.display=$('#delBtn').style.display=$('#editNote').style.display='none';liveScore();
+}
+function collect(){
+  const r={id:editId};F.forEach(k=>r[k]=$('#'+k).value.trim());r.s=getScores('s');r.a=getScores('a');
+  if(!r.hn)throw new Error('กรุณากรอกเลขที่ผู้ป่วย (HN)');
+  if(!r.assessDate)throw new Error('กรุณาระบุวันที่ประเมิน');
+  if(r.s.includes(0))throw new Error('กรุณาตอบแบบประเมินความพึงพอใจให้ครบ 10 ข้อ');
+  if(r.a.includes(0))throw new Error('กรุณาตอบแบบประเมินความวิตกกังวลให้ครบ 10 ข้อ');
+  return r;
+}
+async function run(fn,okMsg,after){
+  if(busy)return;let r;
+  try{r=collect()}catch(e){return toast(msg(e),'err')}
+  lock(true);
+  try{await fn(r);toast(okMsg,'ok');after&&after()}catch(e){toast(msg(e),'err')}finally{lock(false)}
+}
+$('#saveBtn').onclick=()=>run(r=>gs('saveData',r,token),'บันทึกข้อมูลสำเร็จ',()=>{resetForm();window.scrollTo(0,0)});
+$('#updBtn').onclick=()=>run(r=>gs('updateData',r),'แก้ไขข้อมูลสำเร็จ',()=>{resetForm();show('list');search()});
+$('#clearBtn').onclick=()=>{if(confirm('ต้องการล้างข้อมูลในแบบฟอร์มทั้งหมดหรือไม่?'))resetForm()};
+$('#delBtn').onclick=()=>delRec(editId,()=>{resetForm();show('list');search()});
+async function delRec(id,after){
+  if(busy||!id||!confirm('ยืนยันการลบข้อมูลนี้? การลบไม่สามารถกู้คืนได้'))return;
+  lock(true);try{await gs('deleteData',id);toast('ลบข้อมูลสำเร็จ','ok');after&&after()}catch(e){toast(msg(e),'err')}finally{lock(false)}
+}
+
+/* รายการ */
+async function search(){
+  $('#rows').innerHTML='<tr><td colspan="8" class="empty">กำลังโหลด...</td></tr>';
+  try{DATA=await gs('searchData',{hn:$('#qHn').value,from:$('#qFrom').value,to:$('#qTo').value});renderRows()}
+  catch(e){$('#rows').innerHTML='';toast(msg(e),'err')}
+}
+function renderRows(){
+  $('#cnt').textContent=`(${DATA.length} ราย)`;
+  $('#rows').innerHTML=DATA.length?DATA.map((r,i)=>`<tr><td>${esc(r.hn)}</td><td>${esc(r.assessDate)}</td><td>${esc(r.age)} / ${esc(r.sex)}</td><td>${esc(r.ward)}</td><td>${esc(r.surgeryType)}</td><td>${r.sMean.toFixed(2)} (${esc(r.sLevel)})</td><td>${r.aMean.toFixed(2)} (${esc(r.aLevel)})</td><td class="noprint"><button class="btn sm" data-a="v" data-i="${i}">ดู</button> <button class="btn sm" data-a="e" data-i="${i}">แก้ไข</button> <button class="btn sm d" data-a="d" data-i="${i}">ลบ</button></td></tr>`).join(''):'<tr><td colspan="8" class="empty">ไม่พบข้อมูล</td></tr>';
+}
+$('#rows').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;const r=DATA[+b.dataset.i];
+  if(b.dataset.a==='v')report(r);
+  if(b.dataset.a==='e')edit(r);
+  if(b.dataset.a==='d')delRec(r.id,search);
+};
+function edit(r){
+  resetForm();F.forEach(k=>$('#'+k).value=r[k]||'');setScores('s',r.s);setScores('a',r.a);editId=r.id;
+  $('#saveBtn').style.display='none';$('#updBtn').style.display=$('#delBtn').style.display='';
+  $('#editNote').style.display='block';$('#editNote').textContent=`กำลังแก้ไขข้อมูล HN ${r.hn} (วันที่ประเมิน ${r.assessDate})`;
+  show('form');window.scrollTo(0,0);
+}
+$('#qBtn').onclick=search;
+$('#qClear').onclick=()=>{$('#qHn').value=$('#qFrom').value=$('#qTo').value='';search()};
+$('#csvBtn').onclick=()=>{
+  if(!DATA.length)return toast('ไม่มีข้อมูลสำหรับส่งออก','err');
+  const h=['HN','วันที่ประเมิน','ชื่อ/รหัส','อายุ','เพศ','หอผู้ป่วย','ชนิดการผ่าตัด','วันที่ผ่าตัด','ประสบการณ์ผ่าตัด','โรคประจำตัว',...SQ.map((q,i)=>'พึงพอใจ'+(i+1)),'พึงพอใจรวม','พึงพอใจเฉลี่ย','ระดับพึงพอใจ',...AQ.map((q,i)=>'กังวล'+(i+1)),'กังวลรวม','กังวลเฉลี่ย','ระดับกังวล','ความคิดเห็น','ควรปรับปรุง','ข้อเสนอแนะเตรียมตัว','ข้อกังวล'];
+  const rows=DATA.map(r=>[r.hn,r.assessDate,r.name,r.age,r.sex,r.ward,r.surgeryType,r.surgeryDate,r.priorSurgery,r.disease,...r.s,r.sTotal,r.sMean,r.sLevel,...r.a,r.aTotal,r.aMean,r.aLevel,r.comment,r.improve,r.prepSuggest,r.concern]);
+  const csv='\uFEFF'+[h,...rows].map(l=>l.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='patient_assessment_'+todayStr()+'.csv';a.click();
+};
+function printAs(m){document.body.dataset.print=m;setTimeout(()=>{window.print();setTimeout(()=>delete document.body.dataset.print,500)},100)}
+$('#printList').onclick=()=>printAs('view');
+$('#printDash').onclick=()=>printAs('view');
+$('#printOne').onclick=()=>printAs('modal');
+$('#closeM').onclick=()=>$('#modal').classList.remove('on');
+function report(r){
+  const tb=(qs,v)=>`<table><tbody>${qs.map((q,i)=>`<tr><td>${i+1}. ${q}</td><td>${v[i]}</td></tr>`).join('')}</tbody></table>`;
+  $('#report').innerHTML=`<h2>รายงานคะแนนรายบุคคล</h2>
+<p>HN: <b>${esc(r.hn)}</b> · วันที่ประเมิน: ${esc(r.assessDate)} · อายุ ${esc(r.age)} ปี · เพศ ${esc(r.sex)}<br>หอผู้ป่วย: ${esc(r.ward)} · การผ่าตัด: ${esc(r.surgeryType)} (กำหนด ${esc(r.surgeryDate)})<br>ประสบการณ์ผ่าตัด: ${esc(r.priorSurgery)} · โรคประจำตัว: ${esc(r.disease)}</p>
+<h2>ความพึงพอใจ: รวม ${r.sTotal}/50 · เฉลี่ย ${r.sMean.toFixed(2)} · ${esc(r.sLevel)}</h2>${tb(SQ,r.s)}
+<h2 style="margin-top:14px">ความวิตกกังวล: รวม ${r.aTotal}/50 · เฉลี่ย ${r.aMean.toFixed(2)} · ${esc(r.aLevel)}</h2>${tb(AQ,r.a)}
+<h2 style="margin-top:14px">ข้อเสนอแนะ</h2><p>ความคิดเห็น: ${esc(r.comment)||'-'}<br>สิ่งที่ควรปรับปรุง: ${esc(r.improve)||'-'}<br>ข้อเสนอแนะการเตรียมตัว: ${esc(r.prepSuggest)||'-'}<br>สิ่งที่ยังกังวล/อยากถาม: ${esc(r.concern)||'-'}</p>`;
+  $('#modal').classList.add('on');
+}
+
+/* Dashboard */
+function distRows(id,counts,labels,cls){
+  const n=counts.reduce((a,b)=>a+b,0);
+  $(id).innerHTML=labels.map((l,i)=>{const p=n?counts[i]/n*100:0;return `<tr><td>${l}</td><td style="width:40%"><div class="bar ${cls}"><i style="width:${p}%"></i></div></td><td>${p.toFixed(1)}%</td><td>${counts[i]} ราย</td></tr>`}).join('');
+}
+function chart(id,cfg){if(typeof Chart==='undefined')return;charts[id]&&charts[id].destroy();charts[id]=new Chart($('#'+id),cfg)}
+async function dash(){
+  try{
+    const d=await gs('getDashboardData',$('#dFrom').value,$('#dTo').value);
+    $('#kN').textContent=d.total;$('#kS').textContent=d.total?d.avgS.toFixed(2):'-';$('#kA').textContent=d.total?d.avgA.toFixed(2):'-';
+    $('#kSL').textContent=d.total?SL[lv(d.avgS)]:'';$('#kAL').textContent=d.total?AL[lv(d.avgA)]:'';
+    distRows('#sDist',d.sDist,SL,'');distRows('#aDist',d.aDist,AL,'anx-bar');
+    chart('c1',{type:'bar',data:{labels:['ความพึงพอใจ','ความวิตกกังวล'],datasets:[{data:[d.avgS,d.avgA],backgroundColor:['#0d6b73','#b4472f']}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:5}}}});
+    chart('c2',{type:'line',data:{labels:d.monthly.map(m=>m.month),datasets:[{label:'ความพึงพอใจ',data:d.monthly.map(m=>m.s),borderColor:'#0d6b73',backgroundColor:'#0d6b73'},{label:'ความวิตกกังวล',data:d.monthly.map(m=>m.a),borderColor:'#b4472f',backgroundColor:'#b4472f'}]},options:{maintainAspectRatio:false,scales:{y:{min:0,max:5}}}});
+  }catch(e){toast(msg(e),'err')}
+}
+$('#dBtn').onclick=dash;
+$('#dClear').onclick=()=>{$('#dFrom').value=$('#dTo').value='';dash()};
+
+function show(v){$$('.view').forEach(x=>x.classList.toggle('on',x.id==='v-'+v));$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v));if(v==='list')search();if(v==='dash')dash()}
+$$('nav button').forEach(b=>b.onclick=()=>show(b.dataset.v));
+init();
+</script>
+</body>
+</html>
