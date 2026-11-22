@@ -110,4 +110,63 @@ th{background:var(--tealbg);font-weight:600}
 <div class="grid">
 <label class="f wide">ความคิดเห็นเกี่ยวกับการให้บริการ<textarea id="comment" maxlength="1000"></textarea></label>
 <label class="f wide">สิ่งที่ต้องการให้ปรับปรุง<textarea id="improve" maxlength="1000"></textarea></label>
-<label class="f wide">ข้อเสนอแนะเกี่ยวกับการเตรียมตัวก่อนผ่าตัด<textarea id="prepSuggest"
+<label class="f wide">ข้อเสนอแนะเกี่ยวกับการเตรียมตัวก่อนผ่าตัด<textarea id="prepSuggest" maxlength="1000"></textarea></label>
+<label class="f wide">สิ่งที่ยังกังวลหรืออยากสอบถามเพิ่มเติม<textarea id="concern" maxlength="1000"></textarea></label>
+</div></section>
+
+<div class="btns">
+<button class="btn p" id="saveBtn">บันทึกข้อมูล</button>
+<button class="btn p" id="updBtn" style="display:none">บันทึกการแก้ไข</button>
+<button class="btn d" id="delBtn" style="display:none">ลบข้อมูลนี้</button>
+<button class="btn" id="clearBtn">ล้างแบบฟอร์ม</button>
+</div>
+</div>
+
+<!-- รายการ -->
+<div class="view" id="v-list">
+<section class="card"><h2>ค้นหาและจัดการข้อมูล</h2>
+<div class="grid">
+<label class="f">HN<input id="qHn" placeholder="พิมพ์ HN"></label>
+<label class="f">ตั้งแต่วันที่<input type="date" id="qFrom"></label>
+<label class="f">ถึงวันที่<input type="date" id="qTo"></label>
+</div>
+<div class="btns" style="margin-top:12px">
+<button class="btn p" id="qBtn">ค้นหา</button>
+<button class="btn" id="qClear">แสดงทั้งหมด</button>
+<button class="btn" id="csvBtn">ส่งออก Excel/CSV</button>
+<button class="btn" id="printList">พิมพ์รายงานภาพรวม (PDF)</button>
+</div></section>
+<section class="card"><h2>รายงานภาพรวมผู้ป่วย <small id="cnt"></small></h2>
+<div class="tw"><table><thead><tr><th>HN</th><th>วันที่ประเมิน</th><th>อายุ/เพศ</th><th>หอผู้ป่วย</th><th>การผ่าตัด</th><th>พึงพอใจ</th><th>วิตกกังวล</th><th class="noprint"></th></tr></thead>
+<tbody id="rows"></tbody></table></div></section>
+</div>
+
+<!-- Dashboard -->
+<div class="view" id="v-dash">
+<section class="card noprint"><h2>เลือกช่วงวันที่</h2>
+<div class="grid"><label class="f">ตั้งแต่<input type="date" id="dFrom"></label><label class="f">ถึง<input type="date" id="dTo"></label></div>
+<div class="btns" style="margin-top:12px"><button class="btn p" id="dBtn">แสดงผล</button><button class="btn" id="dClear">ทุกช่วงเวลา</button><button class="btn" id="printDash">พิมพ์สรุปผล (PDF)</button></div></section>
+<div class="kpis">
+<div class="kpi"><small>ผู้ป่วยที่ได้รับการประเมิน</small><div id="kN">0</div></div>
+<div class="kpi s"><small>คะแนนเฉลี่ยความพึงพอใจ (เต็ม 5)</small><div id="kS">-</div><small id="kSL"></small></div>
+<div class="kpi a"><small>คะแนนเฉลี่ยความวิตกกังวล (เต็ม 5)</small><div id="kA">-</div><small id="kAL"></small></div>
+</div>
+<div class="charts">
+<section class="card"><h2>เปรียบเทียบคะแนนเฉลี่ย</h2><div class="cbox"><canvas id="c1"></canvas></div></section>
+<section class="card"><h2>แนวโน้มรายเดือน</h2><div class="cbox"><canvas id="c2"></canvas></div></section>
+</div>
+<div class="charts">
+<section class="card"><h2>ร้อยละระดับความพึงพอใจ</h2><table><tbody id="sDist"></tbody></table></section>
+<section class="card"><h2>ร้อยละระดับความวิตกกังวล</h2><table><tbody id="aDist"></tbody></table></section>
+</div>
+</div>
+</main>
+
+<!-- รายงานรายบุคคล -->
+<div class="modal" id="modal"><div class="mbox"><div id="report"></div>
+<div class="btns noprint" style="margin-top:14px"><button class="btn p" id="printOne">พิมพ์ / บันทึกเป็น PDF</button><button class="btn" id="closeM">ปิด</button></div></div></div>
+<div id="toast"></div>
+
+<script src="app.js?v=1"></script>
+</body>
+</html>
